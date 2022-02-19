@@ -6,9 +6,7 @@ const Navigation = ({ currentPage, next, previous }) => {
       <a onClick={() => previous(currentPage)} href="#" className="previous">
         &laquo; Previous
       </a>
-      <div className="pageNumber">
-        <p>{currentPage + 1}</p>
-      </div>
+      <p>{currentPage + 1}</p>
       <a onClick={() => next(currentPage)} href="#" className="next">
         Next &raquo;
       </a>

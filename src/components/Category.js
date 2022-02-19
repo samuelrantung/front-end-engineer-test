@@ -3,12 +3,12 @@ import "../index.css";
 
 const Category = ({ categories, categoryClicked }) => {
   return (
-    <div className="button-group p-0">
+    <div className="btn-category-container">
       {categories.map((category) => (
         <button
           onClick={() => categoryClicked(category.id)}
           key={category.id}
-          className="btn btn-primary m-1"
+          className="btn-category"
         >
           {category.name}
         </button>

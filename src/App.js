@@ -2,8 +2,12 @@ import axios from "axios";
 import React, { useState, useEffect } from "react";
 import Books from "./components/Books";
 import Category from "./components/Category";
+import Footer from "./components/Footer";
+import Header from "./components/Header";
+import Loading from "./components/Loading";
 import Navigation from "./components/Navigation";
 import Search from "./components/Search";
+import SearchBar from "./components/SearchBar";
 import useLocalStorage from "./hooks/localStorage";
 import "./index.css";
 
@@ -15,30 +19,65 @@ const App = () => {
   const [categories, setCategories] = useState([]);
   const [currentCategory, setCurrentCategory] = useState(1);
   const [search, setSearch] = useState("");
-  //   const [bookmarked, setBookmarked] = useLocalStorage('bookmarked',[]);
-  const [bookmarked, setBookmarked] = useState([]);
+  const [bookmarked, setBookmarked] = useLocalStorage("bookmarked", []);
+  const [error, setError] = useState(null);
+  const [bookmarkedOpen, setBookmarkedOpen] = useState(false);
 
   useEffect(() => {
     const fetch = async () => {
       setLoading(true);
-      const booksRes = await axios.get(
-        `https://asia-southeast2-sejutacita-app.cloudfunctions.net/fee-assessment-books?categoryId=${currentCategory}&page=${currentPage}&size=${booksPerPage}`
-      );
-      const categoriesRes = await axios.get(
-        "https://asia-southeast2-sejutacita-app.cloudfunctions.net/fee-assessment-categories"
-      );
-      setBooks(booksRes.data);
-      setCategories(categoriesRes.data);
+      const booksRes = await axios
+        .get(
+          `https://asia-southeast2-sejutacita-app.cloudfunctions.net/fee-assessment-books?categoryId=${currentCategory}&page=${currentPage}&size=${booksPerPage}`
+        )
+        .catch((err) => {
+          setError(err.message);
+          setLoading(false);
+        });
+      const categoriesRes = await axios
+        .get(
+          "https://asia-southeast2-sejutacita-app.cloudfunctions.net/fee-assessment-categories"
+        )
+        .catch((err) => console.log("Category fetch error : ", err.response));
+      if (booksRes.request.status === 200) {
+        setError(false);
+        setBooks(booksRes.data);
+        setCategories(categoriesRes.data);
+        setLoading(false);
+      }
     };
     fetch();
-
-    if (categories.length !== 0) {
-      setLoading(false);
-    }
-  }, [currentPage, currentCategory, categories]);
+  }, [currentPage, currentCategory]);
 
   //category click handler
-  const categoryClicked = (category) => setCurrentCategory(category.id);
+  const categoryClicked = (category) => {
+    console.log("clicked", category);
+    setCurrentPage(0);
+    setCurrentCategory(category);
+    setBookmarkedOpen(false);
+  };
+
+  const openBookmarked = () => setBookmarkedOpen(!bookmarkedOpen); //handle bookmark click
+
+  //save bookmark
+  const bookmark = (book) => {
+    if (bookmarked.length === 0) {
+      //check if bookmarke array is null
+      setBookmarked([...bookmarked, book]);
+    } else if (!bookmarked.some((val) => val.id === book.id)) {
+      //check no duplicated book & add to bookmarked list
+      setBookmarked([...bookmarked, book]);
+    } else {
+      // deleting book from bookmarked
+      const index = bookmarked.findIndex(({ id }) => id === book.id);
+      if (index !== -1) {
+        setBookmarked([
+          ...bookmarked.slice(0, index),
+          ...bookmarked.slice(index + 1),
+        ]);
+      }
+    }
+  };
 
   //next page
   const next = (pageNumber) => setCurrentPage(pageNumber + 1);
@@ -48,38 +87,38 @@ const App = () => {
       setCurrentPage(pageNumber - 1);
     }
   };
-  //save bookmark
-  const bookmark = (book) => {
-    if (bookmarked.length === 0) {
-      setBookmarked([...bookmarked, book]);
-    } else if (!bookmarked.some((val) => val.id === book.id)) {
-      setBookmarked([...bookmarked, book]);
-    }
-  };
 
-  //   console.log("heheh", categories);
-  if (loading) {
-    // console.log(categories);
-    return <h2>loading...</h2>;
-  }
+  // console.log(bookmarkedOpen);
   return (
-    <div className="container">
-      {/* {bookmarked.map((val) => console.log("wkwkwkw", val))} */}
-      <h1>sejutaCita</h1>
-      <Search setSearch={setSearch} />
-      <Category categories={categories} categoryClicked={categoryClicked} />
-      <h1>Bookmarked: {bookmarked.length}</h1>
-      <br></br>
-      <Books
-        books={books}
-        loading={loading}
-        search={search}
-        bookmark={bookmark}
+    <>
+      <Header />
+      <SearchBar
+        setSearch={setSearch}
+        bookmarked={bookmarked}
         categories={categories}
+        categoryClicked={categoryClicked}
+        openBookmarked={openBookmarked}
+        bookmarkedOpen={bookmarkedOpen}
       />
-
-      <Navigation currentPage={currentPage} next={next} previous={previous} />
-    </div>
+      <div className="container">
+        {loading ? (
+          <Loading />
+        ) : error ? (
+          <h1>Could not find any books...</h1>
+        ) : (
+          <Books
+            books={bookmarkedOpen ? bookmarked : books}
+            loading={loading}
+            search={search}
+            bookmarked={bookmarked}
+            bookmark={bookmark}
+            categories={categories}
+          />
+        )}
+        <Navigation currentPage={currentPage} next={next} previous={previous} />
+      </div>
+      <Footer />
+    </>
   );
 };
 

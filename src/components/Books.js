@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import "../index.css";
 
-const Books = ({ books, search, bookmark, categories }) => {
+const Books = ({ books, search, bookmarked, bookmark, categories }) => {
   return (
     <div className="list-group">
       {books
@@ -17,21 +17,33 @@ const Books = ({ books, search, bookmark, categories }) => {
           const category = categories.find(
             (obj) => obj.id === book.category_id
           );
+          let check;
+          const index = bookmarked.findIndex(({ id }) => id === book.id);
+          if (index === -1) {
+            check = index;
+          }
           return (
-            <div className="card-container" key={book.id}>
+            <div className="card-grid" key={book.id}>
               <img src={book.cover_url} className="book-cover" alt="..."></img>
               <div className="card-body">
-                <h5 className="card-title">{book.title}</h5>
-                <h5 className="card-title">{category.name}</h5>
+                <div className="card-title-container">
+                  <h5 className="card-title">{book.title}</h5>
+                  <h5 className="card-category">{category.name}</h5>
+                </div>
                 <p className="card-text">{book.description}</p>
-                <a
-                  onClick={() => bookmark(book)}
-                  href="#"
-                  className="btn btn-primary"
-                >
-                  Bookmark now
-                </a>
               </div>
+              {check ? (
+                <button onClick={() => bookmark(book)} className="btn-bookmark">
+                  <h5 className="btn-text">Bookmark Now</h5>
+                </button>
+              ) : (
+                <button
+                  onClick={() => bookmark(book)}
+                  className="btn-bookmark-del"
+                >
+                  <h5 className="btn-text">Remove from Bookmark</h5>
+                </button>
+              )}
             </div>
           );
         })}
