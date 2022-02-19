@@ -9,12 +9,20 @@ const SearchBar = ({
   categoryClicked,
   openBookmarked,
   bookmarkedOpen,
+  setBooksPerPage,
 }) => {
-  console.log(bookmarkedOpen);
   return (
     <div className="option-container">
       <div className="option-col">
         <Search setSearch={setSearch} />
+        <div className="total-per-page">
+          <input
+            className="total-per-page-input"
+            placeholder="10"
+            disabled={bookmarkedOpen ? true : false}
+            onChange={(e) => setBooksPerPage(e.target.value)}
+          ></input>
+        </div>
         <div
           className={
             bookmarkedOpen ? "btn-bookmarked-closed" : "btn-bookmarked"

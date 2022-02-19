@@ -1,12 +1,10 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import Books from "./components/Books";
-import Category from "./components/Category";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
 import Loading from "./components/Loading";
 import Navigation from "./components/Navigation";
-import Search from "./components/Search";
 import SearchBar from "./components/SearchBar";
 import useLocalStorage from "./hooks/localStorage";
 import "./index.css";
@@ -47,7 +45,7 @@ const App = () => {
       }
     };
     fetch();
-  }, [currentPage, currentCategory]);
+  }, [currentPage, currentCategory, booksPerPage]);
 
   //category click handler
   const categoryClicked = (category) => {
@@ -88,7 +86,6 @@ const App = () => {
     }
   };
 
-  // console.log(bookmarkedOpen);
   return (
     <>
       <Header />
@@ -99,6 +96,7 @@ const App = () => {
         categoryClicked={categoryClicked}
         openBookmarked={openBookmarked}
         bookmarkedOpen={bookmarkedOpen}
+        setBooksPerPage={setBooksPerPage}
       />
       <div className="container">
         {loading ? (
